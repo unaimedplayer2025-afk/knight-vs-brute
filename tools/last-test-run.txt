@@ -1,0 +1,20 @@
+PASS  title screen
+PASS  intro: brute drops into the light shaft and roars
+PASS  fight starts
+PASS  W walks toward the brute  11.5 -> 7.0
+PASS  J slash combo damages the brute  640 -> 625 hits=1
+PASS  L dodge roll with i-frames  act=roll
+PASS  K heavy leaping strike starts
+      heavy result: boss hp 625 -> 625
+... fight 1: knight stops fighting back, waiting for the brute
+PASS  player death -> boss finisher  p.hp=0
+PASS  green-magic roar plays  aura=0.87
+PASS  DEFEATED retry screen
+PASS  retry -> new fight
+... fight 2: key-pressing bot fights the brute
+      fight 2 ended: mode=playerFin p.hp=51 b.hp=0 hits=30 dodges=10 phase=2
+PASS  brute defeated -> player finisher  knight hp left 51
+PASS  slow-motion final slash  timeScale=0.22
+PASS  VICTORY retry screen
+PASS  no page errors
+ALL PASSED

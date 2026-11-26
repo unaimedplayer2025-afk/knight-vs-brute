@@ -1,0 +1,11 @@
+{
+  "name": "knight-vs-brute",
+  "version": "1.0.0",
+  "description": "KNIGHT vs BRUTE: a 3D 1v1 boss fight in a crystal cavern (Three.js)",
+  "scripts": {
+    "start": "python3 -m http.server 8797",
+    "play-tests": "node tools/play-tests.js http://127.0.0.1:8797/index.html ?q=low"
+  },
+  "license": "UNLICENSED",
+  "devDependencies": { "playwright-core": "^1.64.1" }
+}
