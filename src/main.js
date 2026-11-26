@@ -701,12 +701,7 @@ function frame() {
       // player pose
       let kp;
       if (!P.act) {
-        const run = runPose(P.runPh, P.moveAmt);
-        const idle = sample(KA.idle, gameTime);
-        kp = {}; for (const n of new Set([...Object.keys(idle), ...Object.keys(run)])) {
-          const a = idle[n] ?? (typeof run[n] === 'number' ? 0 : [0, 0, 0]), b = run[n] ?? (typeof a === 'number' ? 0 : [0, 0, 0]);
-          kp[n] = typeof a === 'number' ? lerp(a, b, P.moveAmt) : a.map((v, i) => lerp(v, b[i], P.moveAmt));
-        }
+        kp = runPose(P.runPh, P.moveAmt); kp.__idle = sample(KA.idle, gameTime);
       } else kp = sample(ACTS[P.act].anim, P.actT);
       K.rig.apply(kp, 1 - Math.exp(-dt * (P.act ? 26 : 14)));
       lastPose = kp;
@@ -796,5 +791,5 @@ window.__dbg = {
 };
 resetFight();
 frame();
-window.__scene = scene; window.__renderer = renderer;
+window.__scene = scene; window.__renderer = renderer; window.__K = K; window.__B = B;
 window.__ready = true;

@@ -8,6 +8,15 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 export const ARENA_R = 12.6;      // playable radius
 const RAIL_R = 14.4;
 
+// CC0 PBR stone from ambientCG (Rock051 = carved stone, Rock035 = dark cave rock) + the painted vista backdrop
+const TL = new THREE.TextureLoader();
+const texBase = new URL('../assets/tex/', import.meta.url).href;
+const [stoneC, stoneN, stoneR, rockC, rockN, backdropTex] = await Promise.all(
+  ['Rock051_Color', 'Rock051_NormalGL', 'Rock051_Roughness', 'Rock035_Color', 'Rock035_NormalGL', 'backdrop'].map((n) => TL.loadAsync(texBase + n + '.jpg')));
+for (const t of [stoneC, rockC, backdropTex]) t.colorSpace = THREE.SRGBColorSpace;
+for (const t of [stoneC, stoneN, stoneR, rockC, rockN]) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; }
+function rep(t, x, y = x) { const c = t.clone(); c.repeat.set(x, y); c.needsUpdate = true; return c; }
+
 function rng(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
 const R = rng(1337);
 const rr = (a, b) => a + (b - a) * R();
@@ -78,6 +87,11 @@ function floorTex() {
         }
       }
     }
+    // real stone grain (ambientCG Rock051) blended over the slabs
+    g.save(); g.globalCompositeOperation = 'overlay'; g.globalAlpha = 0.85;
+    const pat = g.createPattern(stoneC.image, 'repeat'); pat.setTransform(new DOMMatrix().scale(0.55));
+    g.fillStyle = pat; g.fillRect(0, 0, w, w); g.restore();
+    g.save(); g.globalCompositeOperation = 'multiply'; g.globalAlpha = 0.5; g.fillStyle = pat; g.fillRect(0, 0, w, w); g.restore();
     // engraved circle with runes (the big carved ring in the clip)
     const ring = (r, lw, col) => { g.strokeStyle = col; g.lineWidth = lw; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.stroke(); };
     for (const [r, lw] of [[w * 0.40, 16], [w * 0.355, 10], [w * 0.2, 12], [w * 0.17, 6], [w * 0.06, 8]]) {
@@ -239,11 +253,11 @@ export function buildWorld(scene, renderer) {
 
   // --- Round stone platform --------------------------------------------------------
   const fTex = floorTex();
-  const floorMat = new THREE.MeshStandardMaterial({ map: fTex, roughness: 0.88, metalness: 0.05, bumpMap: fTex, bumpScale: 2.2 });
+  const floorMat = new THREE.MeshStandardMaterial({ map: fTex, roughness: 1.0, metalness: 0.05, bumpMap: fTex, bumpScale: 1.2, normalMap: rep(stoneN, 9), normalScale: new THREE.Vector2(0.9, 0.9), roughnessMap: rep(stoneR, 9) });
   const floor = new THREE.Mesh(new THREE.CircleGeometry(RAIL_R + 0.6, 96), floorMat);
   floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
   world.floor = floor;
-  const rimMat = new THREE.MeshStandardMaterial({ color: 0x3a3d45, roughness: 0.9, flatShading: true });
+  const rimMat = new THREE.MeshStandardMaterial({ color: 0x6a6f7a, map: rep(stoneC, 24, 2), normalMap: rep(stoneN, 24, 2), roughness: 0.95 });
   const rim = new THREE.Mesh(new THREE.CylinderGeometry(RAIL_R + 0.9, RAIL_R + 0.2, 3.2, 64, 1, true), rimMat);
   rim.position.y = -1.6; scene.add(rim);
   // dark under-ledge so the platform reads as a high balcony
@@ -251,8 +265,8 @@ export function buildWorld(scene, renderer) {
   under.position.y = -16; scene.add(under);
 
   // --- Balustrade (stone railing ring) -----------------------------------------------
-  const stoneMat = new THREE.MeshStandardMaterial({ color: 0x5d6068, roughness: 0.85, flatShading: false });
-  const stoneDark = new THREE.MeshStandardMaterial({ color: 0x45484f, roughness: 0.9 });
+  const stoneMat = new THREE.MeshStandardMaterial({ color: 0xa4a9b4, map: rep(stoneC, 1, 1), normalMap: rep(stoneN, 1, 1), roughnessMap: rep(stoneR, 1, 1), roughness: 1.0 });
+  const stoneDark = new THREE.MeshStandardMaterial({ color: 0x7a7f8a, map: rep(stoneC, 2, 2), normalMap: rep(stoneN, 2, 2), roughness: 0.95 });
   const lathe = new THREE.LatheGeometry([
     [0.0, 0], [0.13, 0], [0.13, 0.06], [0.08, 0.1], [0.07, 0.2], [0.13, 0.38], [0.12, 0.52], [0.06, 0.62], [0.06, 0.7], [0.12, 0.74], [0.12, 0.8], [0, 0.8],
   ].map(([x, y]) => new THREE.Vector2(x, y)), 10);
@@ -341,8 +355,26 @@ export function buildWorld(scene, renderer) {
   }
 
   // --- Cavern walls, cliffs, stalactites -----------------------------------------------
-  const rockMat = new THREE.MeshStandardMaterial({ color: 0x2b3038, roughness: 0.95, flatShading: true });
-  const rockMat2 = new THREE.MeshStandardMaterial({ color: 0x1f232b, roughness: 1, flatShading: true });
+  const rockMat = new THREE.MeshStandardMaterial({ color: 0x9aa6bc, map: rep(rockC, 3, 3), normalMap: rep(rockN, 3, 3), roughness: 0.95, flatShading: true });
+  const rockMat2 = new THREE.MeshStandardMaterial({ color: 0x7a8496, map: rep(rockC, 2, 4), normalMap: rep(rockN, 2, 4), roughness: 1, flatShading: true });
+  // painted vista backdrop (castle town, waterfalls, aqueduct, crystals) on a far curved screen toward -z
+  {
+    const arc = Math.PI * 0.95, R = 230, H = R * arc * 9 / 16;
+    const geo = new THREE.CylinderGeometry(R, R, H, 64, 1, true, Math.PI - arc / 2, arc);
+    const mat = new THREE.ShaderMaterial({
+      side: THREE.BackSide, depthWrite: false, fog: false, transparent: true,
+      uniforms: { map: { value: backdropTex } },
+      vertexShader: 'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+      fragmentShader: `uniform sampler2D map; varying vec2 vUv;
+        void main(){ vec2 uv = vec2(1.0 - vUv.x, vUv.y); vec3 c = texture2D(map, uv).rgb; c *= 0.95;
+          float a = smoothstep(0.0, 0.08, vUv.x) * smoothstep(1.0, 0.92, vUv.x) * smoothstep(1.0, 0.9, vUv.y);
+          gl_FragColor = vec4(c, a);
+          #include <colorspace_fragment>
+        }`,
+    });
+    const bd = new THREE.Mesh(geo, mat); bd.position.y = H / 2 - 95; bd.renderOrder = -1; scene.add(bd);
+    world.backdrop = bd;
+  }
   // ring of tall cave pillars/walls; lower in the -z "vista" direction
   for (let i = 0; i < 46; i++) {
     const a = (i / 46) * Math.PI * 2 + rr(-0.05, 0.05);
@@ -371,8 +403,8 @@ export function buildWorld(scene, renderer) {
     scene.add(m);
   }
   // mid-distance cliffs + spires in the vista (behind the boss start)
-  for (let i = 0; i < 16; i++) {
-    const x = rr(-60, 60), z = rr(-90, -32);
+  for (let i = 0; i < 7; i++) {
+    const x = rr(-60, 60), z = rr(-70, -32);
     if (Math.abs(x) < 10 && z > -45) continue;
     const m = new THREE.Mesh(rockGeo(1, 1), rockMat);
     const h = rr(8, 30);
@@ -382,7 +414,7 @@ export function buildWorld(scene, renderer) {
     if (R() < 0.5) crystalCluster(R() < 0.5 ? 'teal' : 'purple', x + rr(-1, 1), -14 + h * 1.2, z, rr(0.8, 1.8));
   }
   // far rock spires silhouettes
-  for (let i = 0; i < 18; i++) {
+  for (let i = 0; i < 0; i++) { // far spires replaced by the painted backdrop
     const m = new THREE.Mesh(new THREE.ConeGeometry(rr(3, 7), rr(30, 70), 6), rockMat2);
     m.position.set(rr(-110, 110), rr(-6, 6), rr(-160, -110));
     scene.add(m);

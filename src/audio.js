@@ -5,7 +5,7 @@
 // audio/<name>.ogg + audio/<name>.mp3 into the repo and set the names below, e.g.
 //   const MUSIC = { title: 'audio/title', fight: 'audio/fight' };
 // The OGG/MP3 pick (canPlayType), first-key unlock, fades and M-to-mute are already wired.
-const MUSIC = { title: null, fight: null };
+const MUSIC = { title: 'audio/battle', fight: 'audio/battle' }; // John's track (OGG + MP3 fallback)
 const Snd = {
   ctx: null, muted: false, ready: false, unlocked: false,
   titleAud: null, gameAud: null, musicMode: 'title',
@@ -37,7 +37,8 @@ const Snd = {
       return a;
     };
     this.titleAud = make(MUSIC.title);
-    this.gameAud = make(MUSIC.fight);
+    // same file for title and fight: one looping element, never restarted between screens
+    this.gameAud = MUSIC.fight === MUSIC.title ? this.titleAud : make(MUSIC.fight);
   },
   setScene(mode) {
     this.musicMode = (mode === 'title' || mode === 'end') ? 'title' : 'game';
@@ -53,10 +54,9 @@ const Snd = {
   update(dt) {
     if (!this.titleAud && !this.gameAud) return;
     const fade = 1.4;
-    const tracks = [
-      [this.titleAud, this.musicMode === 'title' ? 0.46 : 0],
-      [this.gameAud, this.musicMode === 'game' ? 0.42 : 0],
-    ];
+    const tracks = this.gameAud === this.titleAud
+      ? [[this.titleAud, this.musicMode === 'title' ? 0.4 : 0.5]]
+      : [[this.titleAud, this.musicMode === 'title' ? 0.46 : 0], [this.gameAud, this.musicMode === 'game' ? 0.42 : 0]];
     for (const [a, vol] of tracks) {
       if (!a) continue;
       const target = (!this.muted && this.unlocked) ? vol : 0;

@@ -17,7 +17,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   const page = await browser.newPage({ viewport: { width: W, height: H } });
   const errs = []; page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
   const st = () => page.evaluate(() => window.__dbg.snapshot());
-  const snap = (n) => page.screenshot({ path: PATH.join(SHOT, n + '.png') });
+  const snap = (n) => page.screenshot({ path: PATH.join(SHOT, n.replace(/^(\d+)/, (d) => String(+d + 19)) + '.png') }); // v2 shots are 20+
   const waitFor = (fnSrc, ms) => page.waitForFunction(new Function('return (' + fnSrc + ')(window.__dbg.snapshot())'), null, { timeout: ms, polling: 50 });
   const kb = page.keyboard;
 

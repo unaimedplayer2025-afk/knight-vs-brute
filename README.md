@@ -28,7 +28,7 @@ Start or retry with any key, Enter, or a tap.
 
 ## Music
 
-No music track is included right now, by request. The game uses only sound effects made in the browser. The music code is ready for a track later: add `audio/<name>.ogg` and `audio/<name>.mp3`, then set `MUSIC` at the top of `src/audio.js`. It picks OGG or MP3 automatically, starts on the first key or tap, and M mutes it.
+The fight music is John's own battle track (`audio/battle.ogg`, with `audio/battle.mp3` for Safari). It starts on the first key or tap, loops through the title and the fight, and M mutes it. Sound effects are made in the browser.
 
 ## Graphics quality
 
@@ -36,10 +36,4 @@ The game picks a quality level automatically and drops a level if the fight runs
 
 ## Tech
 
-Three.js r170 (in `vendor/`) with bloom post-processing. Everything is built from code: the models are made from basic shapes, the textures are drawn in code, and the animation is a small keyframe system. There are no build steps, so you can open it with any static file server.
-
-- `src/world.js`: the cavern, the platform, the scenery and the sky
-- `src/chars.js`: the knight and brute models and their animations
-- `src/fx.js`: sparks, sword trails, shockwaves, warnings, smoke, the sword wave and the green roar
-- `src/main.js`: controls, combat, the brute's AI, the finishing moves, the camera and the HUD
-- `tools/play-tests.js`: a Playwright test that uses real key presses. It plays one fight that the brute wins and one that the knight wins (a bot that reads the game state and presses real keys), and saves screenshots to `shots/`.
+Three.js r170 (in `vendor/`) with bloom post-processing. The knight and the brute are real rigged 3D characters (Quaternius Universal Base Characters) driven by motion-captured-style clips from the Quaternius Universal Animation Library 1 and 2, loaded with GLTFLoader + meshopt compression. Their armor, cape, swords and the brute's skull are added and colored in code. The stone is CC0 PBR texture from ambientCG, and the far vista is a painted backdrop. See `CREDITS.md`. There are no build steps, so you can open it with any static file server. `tools/` has the asset build script notes and the real-keypress test (`node tools/play-tests.js <url>`).

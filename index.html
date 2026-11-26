@@ -35,6 +35,8 @@
   body.cine .lb{height:9vh}
   .screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;z-index:5;transition:opacity .5s;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 30%,rgba(0,0,0,.55) 100%)}
   .screen.off{opacity:0;pointer-events:none}
+  .credits{position:absolute;bottom:10px;left:0;right:0;font-size:11px;letter-spacing:.04em;color:rgba(200,215,235,.55)}
+  .credits a{color:rgba(160,210,255,.8)}
   h1{margin:0;font-size:clamp(34px,7vw,84px);letter-spacing:6px;line-height:1;color:#d9ecff;text-shadow:0 0 12px #2a9dff,0 0 34px #1060ff,0 4px 0 #000}
   h1 .vs{color:#ffb070;text-shadow:0 0 12px #ff6a00,0 4px 0 #000;font-size:.55em;vertical-align:middle;margin:0 .3em}
   .sub{margin-top:10px;font-size:clamp(13px,2vw,18px);letter-spacing:4px;color:#8fe9df;text-shadow:0 0 8px #000}
@@ -88,6 +90,7 @@
     <div><b>I</b>sword wave (when the blue meter is full)</div>
     <div><b>M</b>mute &nbsp;·&nbsp; gamepad works too</div>
   </div>
+  <div class="credits">Characters &amp; animations: Quaternius (CC0) &nbsp;·&nbsp; Stone textures: ambientCG (CC0) &nbsp;·&nbsp; Engine: three.js (MIT) &nbsp;·&nbsp; Music: John's battle track &nbsp;·&nbsp; <a href="CREDITS.md" target="_blank">full credits</a></div>
 </div>
 <div class="screen off" id="end">
   <div id="endTitle"></div>
